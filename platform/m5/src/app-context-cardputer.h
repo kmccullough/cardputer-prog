@@ -5,7 +5,7 @@
 #include "ui-cardputer.h"
 
 struct AppContextCardputer : AppContext {
-    UICardputer* ui = nullptr;
+    UICardputer ui;
 
     bool init();
 };

@@ -9,7 +9,7 @@ struct AppContextDesktop : AppContext {
     bool running = true;
     int exitCode = 0;
 
-    UIDesktop* ui = nullptr;
+    UIDesktop ui;
 
     bool init();
     void exit(int exitCode = 0);

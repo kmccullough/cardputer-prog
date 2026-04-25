@@ -5,8 +5,7 @@
 AppContextDesktop app;
 
 bool AppContextDesktop::init() {
-    this->ui = new UIDesktop;
-    if (!this->ui->init()) {
+    if (!this->ui.init()) {
         std::cerr << "Failed to initialize UI\n";
         return false;
     }
@@ -19,5 +18,5 @@ void AppContextDesktop::exit(int exitCode) {
 }
 
 void AppContextDesktop::cleanup() {
-    this->ui->cleanup();
+    this->ui.cleanup();
 }

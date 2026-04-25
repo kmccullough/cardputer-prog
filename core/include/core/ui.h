@@ -4,12 +4,13 @@
 #include "core/color.h"
 #include "core/position.h"
 
-struct UI {
+class UI {
 protected:
     Color textColor { 255, 255, 255, 255 };
     Position cursorPosition { 0, 0 };
 public:
     virtual ~UI() = default;
+    void run();
     virtual bool init() = 0;
     virtual UI* clear() = 0;
     virtual UI* drawRect(int, int, int, int, Color) = 0;

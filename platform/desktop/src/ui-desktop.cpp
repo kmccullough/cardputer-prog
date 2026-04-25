@@ -63,42 +63,42 @@ void UIDesktop::cleanup() {
     SDL_Quit();
 }
 
-UIDesktop* UIDesktop::clear() {
+UI* UIDesktop::clear() {
     SDL_SetRenderDrawColor(this->renderer, 0, 0, 0, 255); // black
     SDL_RenderClear(this->renderer);
     return this;
 }
 
-UIDesktop* UIDesktop::drawRect(int x, int y, int w, int h, Color c) {
+UI* UIDesktop::drawRect(int x, int y, int w, int h, Color c) {
     SDL_Rect rect = { x, y, w, h };
     SDL_SetRenderDrawColor(this->renderer, c.r, c.g, c.b, c.a);
     SDL_RenderDrawRect(this->renderer, &rect);
     return this;
 }
 
-UIDesktop* UIDesktop::fillRect(int x, int y, int w, int h, Color c) {
+UI* UIDesktop::fillRect(int x, int y, int w, int h, Color c) {
     SDL_Rect rect = { x, y, w, h };
     SDL_SetRenderDrawColor(this->renderer, c.r, c.g, c.b, c.a);
     SDL_RenderFillRect(this->renderer, &rect);
     return this;
 }
 
-UIDesktop* UIDesktop::setTextSize(int size) {
+UI* UIDesktop::setTextSize(int size) {
     // TODO write font handling to create new fonts at sizes as needed and cache
     return this;
 }
 
-UIDesktop* UIDesktop::setTextColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
+UI* UIDesktop::setTextColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
     this->textColor = { r, g, b, a };
     return this;
 }
 
-UIDesktop* UIDesktop::setCursor(int x, int y) {
+UI* UIDesktop::setCursor(int x, int y) {
     this->cursorPosition = { x, y };
     return this;
 }
 
-UIDesktop* UIDesktop::print(const std::string& text) {
+UI* UIDesktop::print(const std::string& text) {
     SDL_Color color = { this->textColor.r, this->textColor.g, this->textColor.b, this->textColor.a };
     SDL_Surface* surface = TTF_RenderUTF8_Blended(font, text.c_str(), color);
     if (!surface) {
@@ -117,7 +117,7 @@ UIDesktop* UIDesktop::print(const std::string& text) {
     return this;
 }
 
-UIDesktop* UIDesktop::println(const std::string& text) {
+UI* UIDesktop::println(const std::string& text) {
     this->print(text);
     // TODO move cursor to next line
     return this;

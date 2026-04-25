@@ -1,6 +1,6 @@
 #include <M5Unified.h>
 #include <M5Cardputer.h>
-#include "input.h"
+#include "core/input.h"
 
 struct CardputerInput : public Input {
 public:

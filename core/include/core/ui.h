@@ -1,14 +1,15 @@
 #pragma once
 #include <cstdint>
 #include <string>
-#include "color.h"
-#include "position.h"
+#include "core/color.h"
+#include "core/position.h"
 
 struct UI {
 protected:
     Color textColor { 255, 255, 255, 255 };
     Position cursorPosition { 0, 0 };
 public:
+    virtual ~UI() = default;
     virtual bool init() = 0;
     virtual UI* clear() = 0;
     virtual UI* drawRect(int, int, int, int, Color) = 0;

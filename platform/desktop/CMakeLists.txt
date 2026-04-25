@@ -15,15 +15,26 @@ find_package(PkgConfig REQUIRED)
 pkg_check_modules(SDL2 REQUIRED sdl2)
 pkg_check_modules(SDL2_TTF REQUIRED SDL2_ttf)
 
+# message(STATUS "CMAKE_SOURCE_DIR is: ${CMAKE_SOURCE_DIR}")
+
 file(GLOB_RECURSE SOURCES
-    ${CMAKE_SOURCE_DIR}/../core/src/*.cpp
+    ${CMAKE_SOURCE_DIR}/../../core/src/*.cpp
     ${CMAKE_SOURCE_DIR}/src/*.cpp
 )
 
 add_executable(${APP_NAME} ${SOURCES})
 
+add_custom_command(
+    TARGET ${APP_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E rm -rf "${CMAKE_CURRENT_BINARY_DIR}/assets"
+    COMMAND ${CMAKE_COMMAND} -E copy_directory 
+            "${CMAKE_CURRENT_SOURCE_DIR}/assets" 
+            "${CMAKE_CURRENT_BINARY_DIR}/assets"
+    COMMENT "Cleaning and syncing assets directory..."
+)
+
 target_include_directories(${APP_NAME} PRIVATE
-    ${CMAKE_SOURCE_DIR}/../core/src
+    ${CMAKE_SOURCE_DIR}/../../core/include
     ${CMAKE_SOURCE_DIR}/src
     ${SDL2_INCLUDE_DIRS}
     ${SDL2_TTF_INCLUDE_DIRS}

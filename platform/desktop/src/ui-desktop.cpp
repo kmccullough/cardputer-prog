@@ -2,8 +2,11 @@
 #include <iostream>
 #include <SDL.h>
 #include <SDL_ttf.h>
+#include <string>
 #include "app-context-desktop.h"
 #include "ui-desktop.h"
+
+std::string getResourcePath(const std::string& relativePath);
 
 bool UIDesktop::init() {
     // Initialize SDL for graphics
@@ -37,7 +40,8 @@ bool UIDesktop::init() {
         return false;
     }
     // Load font
-    this->font = TTF_OpenFont("desktop/fonts/JetBrainsMono-Regular.ttf", 16);
+    std::string fontPath = getResourcePath("assets/fonts/JetBrainsMono-Regular.ttf");
+    this->font = TTF_OpenFont(fontPath.c_str(), 16);
     if (!this->font) {
         std::cerr << "Font failed to load: " << TTF_GetError() << "\n";
         return false;
@@ -113,9 +117,20 @@ UIDesktop* UIDesktop::print(const std::string& text) {
     return this;
 }
 
-
 UIDesktop* UIDesktop::println(const std::string& text) {
     this->print(text);
     // TODO move cursor to next line
     return this;
+}
+
+std::string getResourcePath(const std::string& relativePath) {
+    char* baseDir = SDL_GetBasePath();
+    std::string fullPath = "";
+    if (baseDir) {
+        fullPath = std::string(baseDir) + relativePath;
+        SDL_free(baseDir);
+    } else {
+        fullPath = "./" + relativePath;
+    }
+    return fullPath;
 }

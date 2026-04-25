@@ -3,7 +3,7 @@
 #include <SDL.h>
 #include <SDL_ttf.h>
 #include "ui-desktop.h"
-#include "app-context.h"
+#include "core/app-context.h"
 
 struct AppContextDesktop : AppContext {
     bool running = true;

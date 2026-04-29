@@ -2,7 +2,7 @@
 #include <M5Cardputer.h>
 #include "core/input.h"
 
-struct CardputerInput : public Input {
+struct InputM5 : public Input {
 public:
     bool poll(std::string& out) override {
         M5.update();

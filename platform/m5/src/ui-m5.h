@@ -2,34 +2,24 @@
 #include <cstdint>
 #include <functional>
 #include <string>
-#include <SDL.h>
-#include <SDL_ttf.h>
 #include "core/color.h"
 #include "core/ui.h"
 
-class UIDesktop : public UI {
+class UIM5 : public UI {
 protected:
-    SDL_Window* window = nullptr;
-    SDL_Renderer* renderer = nullptr;
-    SDL_Texture* renderCache = nullptr;
-    TTF_Font* font = nullptr;
-
-    SDL_Color getColor(Color);
+    uint16_t getColor(Color);
 
 public:
-    UIDesktop(const Clock& clock)
+    UIM5(const Clock& clock)
         : UI(clock) {}
 
     bool init() override;
 
-    void cleanup();
-    void beforeRender();
-    void afterRender();
     UI& log(const char* format, ...) override;
 
     UI& drawCircle(int, int, int, Color) override;
-    UI& drawLine(int, int, int, int, Color) override;
     UI& drawPixel(int, int, Color) override;
+    UI& drawLine(int, int, int, int, Color) override;
     UI& drawRect(int, int, int, int, Color) override;
     UI& drawString(const std::string&, int, int) override;
     UI& drawTriangle(int, int, int, int, int, int, Color) override;

@@ -6,54 +6,48 @@ void setup() {
     if (!app.init()) {
         return app.exit(1);
     }
-    app.ui.run();
+    app.ui.setup();
 }
 
 void loop() {
-    // M5.update();
+    SDL_Event e;
 
-    // auto ks = M5Cardputer.Keyboard.keysState();
-    
-    // for (auto c : ks.word) {
-    //     Serial.print((char)c);
-    //     M5.Display.print((char)c);
-    // }
+    while (SDL_PollEvent(&e)) {
+        if (e.type == SDL_QUIT) {
+            app.running = false;
+        }
+
+        if (e.type == SDL_KEYDOWN && e.key.repeat == 0) {
+            SDL_Keycode key = e.key.keysym.sym;
+
+            switch (key) {
+                case SDLK_a:
+                    std::cout << "A pressed\n";
+                    break;
+
+                case SDLK_BACKSPACE:
+                    std::cout << "backspace\n";
+                    break;
+
+                case SDLK_RETURN:
+                    std::cout << "enter\n";
+                    break;
+            }
+        }
+    }
+
+    app.ui.loop();
 }
 
 int main() {
-    SDL_Event e;
-
+    app.ui.beforeRender();
     setup();
-
+    app.ui.afterRender();
     while (app.running) {
-
-        while (SDL_PollEvent(&e)) {
-            if (e.type == SDL_QUIT) {
-                app.running = false;
-            }
-
-            if (e.type == SDL_KEYDOWN && e.key.repeat == 0) {
-                SDL_Keycode key = e.key.keysym.sym;
-
-                switch (key) {
-                    case SDLK_a:
-                        std::cout << "A pressed\n";
-                        break;
-
-                    case SDLK_BACKSPACE:
-                        std::cout << "backspace\n";
-                        break;
-
-                    case SDLK_RETURN:
-                        std::cout << "enter\n";
-                        break;
-                }
-            }
-        }
-
+        app.ui.beforeRender();
         loop();
+        app.ui.afterRender();
     }
-
     app.cleanup();
     return 0;
 }

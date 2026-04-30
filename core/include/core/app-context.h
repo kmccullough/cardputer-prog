@@ -1,10 +1,9 @@
 #pragma once
 
+#include "clock.h"
 #include "ui.h"
 
 struct AppContext {
-    UI* ui = nullptr;
-
     // IInput* input = nullptr;
     // VM* vm = nullptr;
 

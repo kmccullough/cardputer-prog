@@ -23,13 +23,16 @@ public:
           timer(clock),
           subTimer(clock) {}
 
-    const uint width = 240;
-    const uint height = 135;
-
+    const uint32_t width = 240; // TODO fix font to correct size and add scaling
+    const uint32_t height = 135; // Font 0 (Default) 6 x 8 px 40 x 16
+    // const std::string& fontFile = "assets/fonts/JetBrainsMono-Regular.ttf";
+    const std::string fontFile = "assets/fonts/Px437_IBM_EGA_8x8.ttf";
+    const uint32_t fontHeight = 8;
+    
     void setup();
     void loop();
     uint32_t now();
-    UI& delay(uint);
+    UI& delay(uint32_t);
     bool delayed();
 
     UI& execute(std::function<void(UI&)>);
@@ -48,7 +51,7 @@ public:
     virtual UI& fillScreen(Color) = 0;
     virtual UI& fillTriangle(int, int, int, int, int, int, Color) = 0;
     virtual UI& print(const std::string&) = 0;
-    virtual UI& println(const std::string&) = 0;
+    virtual UI& println(const std::string& = "") = 0;
     virtual UI& setCursor(int, int) = 0;
     virtual UI& setRotation(int) = 0;
     virtual UI& setTextColor(Color) = 0;

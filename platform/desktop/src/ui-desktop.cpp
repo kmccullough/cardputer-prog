@@ -49,8 +49,8 @@ bool UIDesktop::init() {
         width, height
     );
     // Load font
-    std::string fontPath = getResourcePath("assets/fonts/JetBrainsMono-Regular.ttf");
-    font = TTF_OpenFont(fontPath.c_str(), 16);
+    std::string fontPath = getResourcePath(fontFile);
+    font = TTF_OpenFont(fontPath.c_str(), fontHeight);
     if (!font) {
         std::cerr << "Font failed to load: " << TTF_GetError() << "\n";
         return false;
@@ -229,7 +229,7 @@ UI& UIDesktop::print(const std::string& text) {
 
 UI& UIDesktop::println(const std::string& text) {
     print(text);
-    // TODO move cursor to next line
+    setCursor(cursorPosition.x, cursorPosition.y + fontHeight);
     return *this;
 }
 

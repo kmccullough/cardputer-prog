@@ -1,5 +1,6 @@
 #include <cstdint>
 #include <M5Unified.h>
+#include "core/color.h"
 #include "ui-m5.h"
 
 bool UIM5::init() {
@@ -45,7 +46,7 @@ UI& UIM5::drawRect(int x, int y, int w, int h, Color c) {
     return *this;
 }
 
-UI& UIM5::drawString(const std::string& text, int x, int y) {
+UI& UIM5::drawString(const std::string& text, int32_t x, int32_t y) {
     M5.Display.drawString(text.c_str(), x, y);
     return *this;
 }
@@ -76,12 +77,34 @@ UI& UIM5::fillTriangle(int x1, int y1, int x2, int y2, int x3, int y3, Color c) 
 }
 
 UI& UIM5::print(const std::string& text) {
+    scrollLineIntoView(false);
     M5.Display.print(text.c_str());
     return *this;
 }
 
 UI& UIM5::println(const std::string& text) {
+    scrollLineIntoView(false);
     M5.Display.println(text.c_str());
+    setCursor(cursorPosition.x, cursorPosition.y + fontHeight);
+    return *this;
+}
+
+UI& UIM5::printup(const std::string& text) {
+    scrollLineIntoView(true);
+    M5.Display.print(text.c_str());
+    setCursor(cursorPosition.x, cursorPosition.y - fontHeight);
+    return *this;
+}
+
+UI& UIM5::scroll(int_fast16_t dx, int_fast16_t dy) {
+    M5.Display.scroll(dx, dy);
+    setCursor(cursorPosition.x + dx, cursorPosition.y + dy);
+    return *this;
+}
+
+UI& UIM5::setBaseColor(Color c) {
+    baseColor = c;
+    M5.Display.setBaseColor(getColor(c));
     return *this;
 }
 
@@ -93,6 +116,12 @@ UI& UIM5::setCursor(int x, int y) {
 
 UI& UIM5::setRotation(int rotation) {
     M5.Display.setRotation(rotation);
+    return *this;
+}
+
+UI& UIM5::setScrollRect(int32_t x, int32_t y, int32_t w, int32_t h) {
+    scrollRect = { x, y, w, h };
+    M5.Display.setScrollRect(x, y, w, h);
     return *this;
 }
 

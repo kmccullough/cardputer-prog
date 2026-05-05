@@ -5,6 +5,7 @@
 #include <string>
 #include <thread>
 #include "core/colors.h"
+#include "core/color.h"
 #include "app-context-desktop.h"
 #include "ui-desktop.h"
 
@@ -44,7 +45,7 @@ bool UIDesktop::init() {
         return false;
     }
     // Create buffer
-    renderCache = SDL_CreateTexture(renderer, 
+    renderTexture = SDL_CreateTexture(renderer, 
         SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET,
         width, height
     );
@@ -73,13 +74,13 @@ void UIDesktop::cleanup() {
 }
 
 void UIDesktop::beforeRender() {
-    SDL_SetRenderTarget(renderer, renderCache);
+    SDL_SetRenderTarget(renderer, renderTexture);
 }
 
 void UIDesktop::afterRender() {
     SDL_SetRenderTarget(renderer, NULL);
     SDL_RenderClear(renderer);
-    SDL_RenderCopy(renderer, renderCache, NULL, NULL);
+    SDL_RenderCopy(renderer, renderTexture, NULL, NULL);
     SDL_RenderPresent(renderer);
 }
 
@@ -156,7 +157,7 @@ UI& UIDesktop::drawRect(int x, int y, int w, int h, Color c) {
     return *this;
 }
 
-UI& UIDesktop::drawString(const std::string& text, int x, int y) {
+UI& UIDesktop::drawString(const std::string& text, int32_t x, int32_t y) {
     SDL_Color color = getColor(textColor);
     SDL_Surface* surface = TTF_RenderUTF8_Blended(font, text.c_str(), color);
     if (!surface) {
@@ -223,13 +224,107 @@ UI& UIDesktop::fillTriangle(int x1, int y1, int x2, int y2, int x3, int y3, Colo
 }
 
 UI& UIDesktop::print(const std::string& text) {
+    scrollLineIntoView(false);
     drawString(text, cursorPosition.x, cursorPosition.y);
     return *this;
 }
 
 UI& UIDesktop::println(const std::string& text) {
-    print(text);
+    scrollLineIntoView(false);
+    drawString(text, cursorPosition.x, cursorPosition.y);
     setCursor(cursorPosition.x, cursorPosition.y + fontHeight);
+    return *this;
+}
+
+UI& UIDesktop::printup(const std::string& text) {
+    scrollLineIntoView(true);
+    drawString(text, cursorPosition.x, cursorPosition.y);
+    setCursor(cursorPosition.x, cursorPosition.y - fontHeight);
+    return *this;
+}
+
+UI& UIDesktop::scroll(int_fast16_t dx, int_fast16_t dy) {
+    if (!scrollTexture || (dx == 0 && dy == 0)) {
+        return *this;
+    }
+    SDL_Rect rect = { scrollRect.x, scrollRect.y, scrollRect.w, scrollRect.h };
+    // Clamp to just outside rect
+    int dxi = std::max(-rect.w, std::min((int)dx, rect.w));
+    int dyi = std::max(-rect.h, std::min((int)dy, rect.h));
+    // Copy renderTexture to scrollTexture
+    SDL_SetRenderTarget(renderer, scrollTexture);
+    SDL_RenderCopy(renderer, renderTexture, &rect, nullptr);
+    SDL_SetRenderTarget(renderer, renderTexture);
+    // Add deltas to source/target rect
+    SDL_Rect dst = { 
+        rect.x + dxi, rect.y + dyi,
+        rect.w, rect.h
+    };
+    SDL_Rect src = { 0, 0, rect.w, rect.h };
+    if (dxi > 0) {
+        src.x = 0;
+        src.w -= dxi;
+        dst.w -= dxi;
+    } else if (dxi < 0) {
+        src.x = -dxi;
+        src.w += dxi;
+        dst.w += dxi;
+        dst.x = rect.x;
+    }
+    if (dyi > 0) {
+        src.y = 0;
+        src.h -= dyi;
+        dst.h -= dyi;
+    } else if (dyi < 0) {
+        src.y = -dyi;
+        src.h += dyi;
+        dst.h += dyi;
+        dst.y = rect.y;
+    }
+    // Copy visible portion of scrollTexture to renderTexture
+    SDL_RenderCopy(renderer, scrollTexture, &src, &dst);
+    SDL_SetRenderDrawColor(
+        renderer,
+        baseColor.r,
+        baseColor.g,
+        baseColor.b, baseColor.a
+    );
+    // Clear newly revealed sections
+    SDL_Rect clearRect;
+    if (dyi != 0) {
+        clearRect = { rect.x, rect.y, rect.w, dyi };
+        if (dyi < 0) {
+            clearRect.y += rect.h + dyi;
+            clearRect.h = -clearRect.h;
+        }
+        SDL_RenderFillRect(renderer, &clearRect);
+    }
+    if (dxi != 0) {
+        clearRect = { 
+            rect.x, rect.y,
+            dxi, rect.h
+        };
+        if (dxi < 0) {
+            clearRect.x += rect.w + dxi;
+            clearRect.w = -clearRect.w;
+        }
+        SDL_RenderFillRect(renderer, &clearRect);
+    }
+    setCursor(
+        cursorPosition.x,
+        std::max(
+            rect.y,
+            std::min(
+                cursorPosition.y + dyi, 
+                rect.y + rect.h - (int)fontHeight
+            )
+        )
+    );
+    return *this;
+}
+
+UI& UIDesktop::setBaseColor(Color c) {
+    baseColor = c;
     return *this;
 }
 
@@ -240,6 +335,25 @@ UI& UIDesktop::setCursor(int x, int y) {
 
 UI& UIDesktop::setRotation(int rotation) {
     // TODO
+    return *this;
+}
+
+UI& UIDesktop::setScrollRect(int32_t x, int32_t y, int32_t w, int32_t h) {
+    bool doCreateTexture = !scrollTexture 
+        || scrollRect.w != w || scrollRect.h != h;
+    scrollRect = { x, y, w, h };
+    if (doCreateTexture) {
+        if (scrollTexture) {
+            SDL_DestroyTexture(scrollTexture);
+        }
+        scrollTexture = SDL_CreateTexture(
+            renderer,
+            SDL_PIXELFORMAT_RGBA8888,
+            SDL_TEXTUREACCESS_TARGET,
+            w,
+            h
+        );
+    }
     return *this;
 }
 

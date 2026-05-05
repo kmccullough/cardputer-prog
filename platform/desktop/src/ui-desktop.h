@@ -11,8 +11,9 @@ class UIDesktop : public UI {
 protected:
     SDL_Window* window = nullptr;
     SDL_Renderer* renderer = nullptr;
-    SDL_Texture* renderCache = nullptr;
+    SDL_Texture* renderTexture = nullptr;
     TTF_Font* font = nullptr;
+    SDL_Texture* scrollTexture;
 
     SDL_Color getColor(Color);
 
@@ -31,16 +32,20 @@ public:
     UI& drawLine(int, int, int, int, Color) override;
     UI& drawPixel(int, int, Color) override;
     UI& drawRect(int, int, int, int, Color) override;
-    UI& drawString(const std::string&, int, int) override;
+    UI& drawString(const std::string&, int32_t, int32_t) override;
     UI& drawTriangle(int, int, int, int, int, int, Color) override;
     UI& fillCircle(int, int, int, Color) override;
     UI& fillRect(int, int, int, int, Color) override;
     UI& fillScreen(Color) override;
     UI& fillTriangle(int, int, int, int, int, int, Color) override;
     UI& print(const std::string&) override;
-    UI& println(const std::string&) override;
+    UI& println(const std::string& = "") override;
+    UI& printup(const std::string& = "") override;
+    UI& scroll(int_fast16_t, int_fast16_t) override;
+    UI& setBaseColor(Color c) override;
     UI& setCursor(int, int) override;
     UI& setRotation(int) override;
+    UI& setScrollRect(int32_t, int32_t, int32_t, int32_t) override;
     UI& setTextColor(Color) override;
     UI& setTextColor(Color, Color) override;
     UI& setTextSize(int) override;

@@ -5,7 +5,7 @@
 #include "core/ui.h"
 
 void UI::setup() {
-
+    setScrollRect(0, 0, width, height);
 }
 
 const uint32_t demoDelay = 3000;
@@ -16,7 +16,31 @@ uint32_t demoStart = 0;
 uint8_t demoStuff = 0;
 
 #define BEGIN_DEMO demoStart = now(); demoStuff = 0; subTimer.reset()
-#define NEXT_DEMO ++demoIndex
+#define NEXT_DEMO delay(std::max(0, \
+    (int)(demoDelay - (now() - demoStart)) \
+)); ++demoIndex; subTimer.reset();
+
+
+static constexpr int scrollLineCount = 17;
+static constexpr std::array<std::string_view, scrollLineCount> scrollLines = {
+    "╔════════════════════════════╗",
+    "║                            ║",
+    "║                            ║",
+    "║   ┌───┬────────────┬───┐   ║",
+    "║   │ ╔═╧════════════╧═╗ │   ║",
+    "║   ├─╢ Cardputer-prog ╟─┤   ║",
+    "║   │ ║ Graphics Demo  ║ │   ║",
+    "║   ╞═╬════════════════╬═╡   ║",
+    "║   │ ║     Text &     ║ │   ║",
+    "║   │ ║     Scroll     ║ │   ║",
+    "║   ├─╢      Demo      ╟─┤   ║",
+    "║   │ ╚═╤════════════╤═╝ │   ║",
+    "║   └───┴────────────┴───┘   ║",
+    "║                            ║",
+    "║                            ║",
+    "║                            ║",
+    "╚════════════════════════════╝"
+};
 
 void UI::loop() {
     uint8_t demoNext = 0;
@@ -44,7 +68,6 @@ void UI::loop() {
         println("║    by Kerry McCullough     ║");
         println("║                            ║");
         println("╚════════════════════════════╝");
-        delay(demoDelay);
         NEXT_DEMO;
     } else if (demoIndex == demoNext++ && !delayed()) {
         BEGIN_DEMO;
@@ -60,7 +83,6 @@ void UI::loop() {
             };
             drawLine(0, demoRow, x, height, color);
         }
-        delay(demoDelay);
         NEXT_DEMO;
     } else if (demoIndex == demoNext++ && !delayed()) {
         BEGIN_DEMO;
@@ -116,7 +138,6 @@ void UI::loop() {
             demoRow2 + demoV,
             Colors::Magenta
         );
-        delay(demoDelay);
         NEXT_DEMO;
     } else if (demoIndex == demoNext++ && !delayed()) {
         BEGIN_DEMO;
@@ -134,7 +155,6 @@ void UI::loop() {
                 drawPixel(x, y, color);
             }
         }
-        delay(demoDelay);
         NEXT_DEMO;
     } else if (demoIndex == demoNext++ && !delayed()) {
         bool cleared = false;
@@ -161,7 +181,39 @@ void UI::loop() {
             ++demoStuff;
         }
         if (demoStuff >= 120) {
-            delay(demoDelay);
+            NEXT_DEMO;
+        }
+    } else if (demoIndex == demoNext++ && !delayed()) {
+        if (subTimer.isReset()) {
+            BEGIN_DEMO;
+            log("Scroll Demo (%d)", demoStart = now());
+            fillScreen(Colors::Background);
+            setCursor(0, 0);
+            setTextColor(Colors::Foreground, Colors::Background);
+        }
+        int repeats = 3;
+        int demo2 = scrollLineCount * repeats * 1;
+        int demo3 = scrollLineCount * repeats * 2;
+        int demo4 = scrollLineCount * repeats * 3;
+        int demo5 = scrollLineCount * repeats * 4;
+        if (subTimer.isComplete()) {
+            uint8_t index = demoStuff % scrollLineCount;
+            uint8_t reverseIndex = scrollLineCount - index - 1;
+            if (demoStuff < demo2) {
+                // TODO accept std::string_view instead of string?
+                println(std::string(scrollLines[index]));
+                subTimer.start(demoStuff < demo2 - 1 ? 30 : 2000); 
+            } else if (demoStuff < demo3) {
+                if (demoStuff == demo2) {
+                    fillScreen(Colors::Background);
+                    setCursor(0, height - 8);
+                }
+                printup(std::string(scrollLines[reverseIndex]));
+                subTimer.start(demoStuff < demo3 - 1 ? 30 : 2000); 
+            }
+            ++demoStuff;
+        }
+        if (demoStuff >= 120) {
             NEXT_DEMO;
         }
     } else if (demoIndex == demoNext++ && !delayed()) {
@@ -199,5 +251,34 @@ bool UI::delayed() {
 
 UI& UI::execute(std::function<void(UI&)> fn) {
     fn(*this);
+    return *this;
+}
+
+UI& UI::scrollLineIntoView(bool up) {
+    if (!(scrollPrint && scrollRect.w && scrollRect.h)) {
+        return *this;
+    }
+    if (up) {
+        int scrollTop = scrollRect.y;
+        int remaining = cursorPosition.y - scrollTop + fontHeight;
+        if (remaining < fontHeight) {
+            scroll(0, remaining > 0 ? remaining : fontHeight);
+        }
+        log("remaining: %d %d", 
+            remaining,
+            cursorPosition.y
+        );
+    } else {
+        int scrollBottom = scrollRect.y + scrollRect.h;
+        int remaining = scrollBottom - cursorPosition.y;
+        if (remaining < fontHeight) {
+            scroll(0, -(remaining > 0 ? remaining : fontHeight));
+        }
+    }
+    return *this;
+}
+
+UI& UI::setScrollPrint(bool enabled) {
+    scrollPrint = enabled;
     return *this;
 }
